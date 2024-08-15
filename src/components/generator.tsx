@@ -82,9 +82,9 @@ export default function MemeGenerator() {
 
   return (
     <div className='flex flex-col gap-4 max-w-[500px] mx-auto'>
-      <div>
-        <Button onClick={() => setMode('static')} variant={mode === 'static' ? 'default' : 'outline'}>Static Mode</Button>
-        <Button onClick={() => setMode('dynamic')} variant={mode === 'dynamic' ? 'default' : 'outline'}>Dynamic Mode</Button>
+      <div className='flex flex-row align-center justify-center gap-2'>
+        <Button onClick={() => setMode('static')} variant={mode === 'static' ? 'default' : 'outline'}>Single</Button>
+        <Button onClick={() => setMode('dynamic')} variant={mode === 'dynamic' ? 'default' : 'outline'}>Split</Button>
       </div>
       {mode === 'dynamic' && (
         <input type="file" accept="image/*" onChange={handleImageUpload} />
