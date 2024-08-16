@@ -41,16 +41,46 @@ export default function MemeGenerator() {
       context.fillStyle = 'white'
       context.strokeStyle = 'black'
       context.lineWidth = 5
-      context.font = '48px Impact'
       context.textAlign = 'center'
 
-      // Top caption
-      context.strokeText(topCaption, canvas.width / 2, 50)
-      context.fillText(topCaption, canvas.width / 2, 50)
+      // Function to draw wrapped text
+      const drawWrappedText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
+        const words = text.split(' ')
+        let line = ''
+        let fontSize = 48
+        const minFontSize = 24
+        context.font = `${fontSize}px Impact`
 
-      // Bottom caption
-      context.strokeText(bottomCaption, canvas.width / 2, canvas.height - 20)
-      context.fillText(bottomCaption, canvas.width / 2, canvas.height - 20)
+        // Reduce font size if single line is too wide
+        while (context.measureText(text).width > maxWidth && fontSize > minFontSize) {
+          fontSize--
+          context.font = `${fontSize}px Impact`
+        }
+
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n] + ' '
+          const metrics = context.measureText(testLine)
+          const testWidth = metrics.width
+
+          if (testWidth > maxWidth && n > 0) {
+            context.strokeText(line, x, y)
+            context.fillText(line, x, y)
+            line = words[n] + ' '
+            y += lineHeight
+          } else {
+            line = testLine
+          }
+        }
+        context.strokeText(line, x, y)
+        context.fillText(line, x, y)
+      }
+
+      // Draw top caption
+      drawWrappedText(topCaption, canvas.width / 2, 50, canvas.width - 20, 48 * 1.2)
+
+      // Draw bottom caption
+      const bottomTextY = canvas.height - 50
+      drawWrappedText(bottomCaption, canvas.width / 2, bottomTextY, canvas.width - 20, -48 * 1.2)
     }
     backgroundImage.src = mode === 'static' ? '/images/thumbnail.png' : '/images/bottom.png'
   }, [mode, image, canvas, context, topCaption, bottomCaption])
@@ -106,7 +136,7 @@ export default function MemeGenerator() {
         height: 'auto',
         margin: '20px 0'
       }} />
-      <Button onClick={handleDownload}>Download Meme</Button>
+      <Button onClick={handleDownload}>Download</Button>
     </div>
   )
 }
