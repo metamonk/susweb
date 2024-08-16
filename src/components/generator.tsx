@@ -46,40 +46,43 @@ export default function MemeGenerator() {
       // Function to draw wrapped text
       const drawWrappedText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
         const words = text.split(' ')
-        let line = ''
+        let lines = ['']
         let fontSize = 48
         const minFontSize = 24
         context.font = `${fontSize}px Impact`
 
-        // Reduce font size if single line is too wide
-        while (context.measureText(text).width > maxWidth && fontSize > minFontSize) {
+        // Wrap text first
+        for (let word of words) {
+          let currentLine = lines[lines.length - 1]
+          let testLine = currentLine ? `${currentLine} ${word}` : word
+          let metrics = context.measureText(testLine)
+          
+          if (metrics.width > maxWidth && currentLine !== '') {
+            lines.push(word)
+          } else {
+            lines[lines.length - 1] = testLine
+          }
+        }
+
+        // Reduce font size if still too wide
+        while (lines.some(line => context.measureText(line).width > maxWidth) && fontSize > minFontSize) {
           fontSize--
           context.font = `${fontSize}px Impact`
         }
 
-        for (let n = 0; n < words.length; n++) {
-          const testLine = line + words[n] + ' '
-          const metrics = context.measureText(testLine)
-          const testWidth = metrics.width
-
-          if (testWidth > maxWidth && n > 0) {
-            context.strokeText(line, x, y)
-            context.fillText(line, x, y)
-            line = words[n] + ' '
-            y += lineHeight
-          } else {
-            line = testLine
-          }
+        let currentY = y
+        for (let line of lines) {
+          context.strokeText(line, x, currentY)
+          context.fillText(line, x, currentY)
+          currentY += lineHeight > 0 ? lineHeight * 0.9 : lineHeight * 0.8
         }
-        context.strokeText(line, x, y)
-        context.fillText(line, x, y)
       }
 
       // Draw top caption
-      drawWrappedText(topCaption, canvas.width / 2, 50, canvas.width - 20, 48 * 1.2)
+      drawWrappedText(topCaption, canvas.width / 2, 80, canvas.width - 20, 48 * 1.2)
 
       // Draw bottom caption
-      const bottomTextY = canvas.height - 50
+      const bottomTextY = canvas.height - 60
       drawWrappedText(bottomCaption, canvas.width / 2, bottomTextY, canvas.width - 20, -48 * 1.2)
     }
     backgroundImage.src = mode === 'static' ? '/images/thumbnail.png' : '/images/bottom.png'
@@ -112,26 +115,33 @@ export default function MemeGenerator() {
 
   return (
     <div className='flex flex-col gap-4 max-w-[500px] mx-auto'>
-      <div className='flex flex-row align-center justify-center gap-2'>
-        <Button onClick={() => setMode('static')} variant={mode === 'static' ? 'default' : 'outline'}>Single</Button>
-        <Button onClick={() => setMode('dynamic')} variant={mode === 'dynamic' ? 'default' : 'outline'}>Split</Button>
+      <div className='border-4 border-white p-4 flex flex-col items-center justify-center'>
+        <h2 className='text-3xl font-bold font-jersey'>Meme Format</h2>
+        <div className='flex flex-row align-center justify-center gap-2 mb-2'>
+          <Button onClick={() => setMode('static')} variant={mode === 'static' ? 'default' : 'outline'}>Single</Button>
+          <Button onClick={() => setMode('dynamic')} variant={mode === 'dynamic' ? 'default' : 'outline'}>Split</Button>
+        </div>
+        {mode === 'dynamic' && (
+          <div className='flex flex-col gap-2 mb-2 w-full'>
+            <label htmlFor="image" className='text-sm font-bold'>Upload Your Own Image</label>
+            <input type="file" accept="image/*" onChange={handleImageUpload} />
+          </div>
+        )}
+        <div className='flex flex-col gap-2 w-full'>
+          <Input
+            placeholder="Top Caption"
+            value={topCaption}
+            onChange={(e) => setTopCaption(e.target.value)}
+          />
+          <Input
+            placeholder="Bottom Caption"
+            value={bottomCaption}
+            onChange={(e) => setBottomCaption(e.target.value)}
+          />
+        </div>
       </div>
-      {mode === 'dynamic' && (
-        <input type="file" accept="image/*" onChange={handleImageUpload} />
-      )}
-      <Input
-        placeholder="Top Caption"
-        value={topCaption}
-        onChange={(e) => setTopCaption(e.target.value)}
-      />
-      <Input
-        placeholder="Bottom Caption"
-        value={bottomCaption}
-        onChange={(e) => setBottomCaption(e.target.value)}
-      />
       <canvas id="memeCanvas" style={{
         border: '1px solid #333',
-        borderRadius: 10,
         width: '100%',
         height: 'auto',
         margin: '20px 0'
