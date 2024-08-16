@@ -42,7 +42,7 @@ export default function Home() {
         height={200}
         className="absolute top-[5%] right-[5%] w-[25vw] max-w-[150px] h-auto transform rotate-12"
       />
-      <p className="text-lg sm:text-xl lg:text-2xl text-center max-w-md mb-8">Y'all really be capping.</p>
+      <p className="text-lg sm:text-xl lg:text-2xl text-center max-w-md mb-8">Y&apos;all really be capping.</p>
       <div
         className="
         justify-center
